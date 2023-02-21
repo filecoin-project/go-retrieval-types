@@ -440,6 +440,13 @@ func DealProposalFromNode(node datamodel.Node) (*DealProposal, error) {
 	return dp, nil
 }
 
+func (dp *DealProposal) AsVoucher() datatransfer.TypedVoucher {
+	return datatransfer.TypedVoucher{
+		Type:    DealProposalType,
+		Voucher: BindnodeRegistry.TypeToNode(dp),
+	}
+}
+
 // DealProposalUndefined is an undefined deal proposal
 var DealProposalUndefined = DealProposal{}
 
@@ -476,6 +483,13 @@ func DealResponseFromNode(node datamodel.Node) (*DealResponse, error) {
 	return dp, nil
 }
 
+func (dr *DealResponse) AsVoucher() datatransfer.TypedVoucher {
+	return datatransfer.TypedVoucher{
+		Type:    DealResponseType,
+		Voucher: BindnodeRegistry.TypeToNode(dr),
+	}
+}
+
 // DealPayment is a payment for an in progress retrieval deal
 type DealPayment struct {
 	ID             DealID
@@ -508,6 +522,26 @@ func DealPaymentFromNode(node datamodel.Node) (*DealPayment, error) {
 	}
 	dp, _ := dpIface.(*DealPayment) // safe to assume type
 	return dp, nil
+}
+
+func (dp *DealPayment) AsVoucher() datatransfer.TypedVoucher {
+	return datatransfer.TypedVoucher{
+		Type:    DealPaymentType,
+		Voucher: BindnodeRegistry.TypeToNode(dp),
+	}
+}
+
+func RetrievalTypeFromVoucher(tv datatransfer.TypedVoucher) (interface{}, error) {
+	switch tv.Type {
+	case DealProposalType:
+		return DealProposalFromNode(tv.Voucher)
+	case DealResponseType:
+		return DealResponseFromNode(tv.Voucher)
+	case DealPaymentType:
+		return DealPaymentFromNode(tv.Voucher)
+	default:
+		return nil, fmt.Errorf("unrecognized retrieval type: %s", tv.Type)
+	}
 }
 
 var BindnodeRegistry = bindnoderegistry.NewRegistry()
