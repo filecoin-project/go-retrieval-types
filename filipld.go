@@ -118,7 +118,8 @@ func bigIntToBytes(iface interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("expected *big.Int value")
 	}
 	if bi == nil || bi.Int == nil {
-		*bi = big.Zero()
+		bzero := big.Zero()
+		bi = &bzero
 	}
 	return bi.Bytes()
 }
